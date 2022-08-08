@@ -32,37 +32,70 @@ set ::env(DESIGN_NAME) user_project_wrapper
 
 # User Configurations
 
+set ::env(RUN_KLAYOUT_XOR) 0
+set ::env(RUN_KLAYOUT_DRC) 0
+# no point in running DRC with magic once openram is in because it will find 3M issues
+# try to turn off all DRC checking so the flow completes and use precheck for DRC instead.
+set ::env(MAGIC_DRC_USE_GDS) 0
+set ::env(RUN_MAGIC_DRC) 0
+set ::env(QUIT_ON_MAGIC_DRC) 0
+
+#set ::env(FP_PDN_CORE_RING_VOFFSET) 12.45
+#set ::env(FP_PDN_CORE_RING_HOFFSET) 12.45
+
+set ::env(VERILOG_INCLUDE_DIRS) [glob  $::env(CARAVEL_ROOT)/verilog/rtl/ ]
 ## Source Verilog Files
 set ::env(VERILOG_FILES) "\
 	$::env(CARAVEL_ROOT)/verilog/rtl/defines.v \
-	$script_dir/../../verilog/rtl/user_project_wrapper.v"
+	$script_dir/../../verilog/rtl/user_project_wrapper.v \
+	$script_dir/../../verilog/rtl/inc/rvj1_defines.v"
 
 ## Clock configurations
-set ::env(CLOCK_PORT) "user_clock2"
-set ::env(CLOCK_NET) "mprj.clk"
+set ::env(CLOCK_PORT) "wb_clk_i"
+set ::env(CLOCK_NET) "wb_clk_i"
 
 set ::env(CLOCK_PERIOD) "10"
 
-## Internal Macros
-### Macro PDN Connections
+# Internal Macros
+## Macro PDN Connections
 set ::env(FP_PDN_MACRO_HOOKS) "\
-	mprj vccd1 vssd1 vccd1 vssd1"
+	iram_inst_A vccd1 vssd1 vccd1 vssd1, \
+	iram_inst_B vccd1 vssd1 vccd1 vssd1, \
+	rvj1_soc vccd1 vssd1 vccd1 vssd1, \
+	dram_inst vccd1 vssd1 vccd1 vssd1"
 
 ### Macro Placement
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro.cfg
 
+set ::env(GLB_RT_OBS)  "met1 500   800  1183.1  1216.54, \
+                        met2 500   800  1183.1  1216.54, \
+                        met3 500   800  1183.1  1216.54, \
+                        met4 500   800  1183.1  1216.54, \
+						met1 1500  800  2183.1  1216.54, \
+                        met2 1500  800  2183.1  1216.54, \
+                        met3 1500  800  2183.1  1216.54, \
+                        met4 1500  800  2183.1  1216.54, \
+                        met1 1100  2400 1783.1  2816.54, \
+                        met2 1100  2400 1783.1  2816.54, \
+                        met3 1100  2400 1783.1  2816.54, \
+                        met4 1100  2400 1783.1  2816.54, \
+                        met5 0     0    2920    3520"
+
+
 ### Black-box verilog and views
 set ::env(VERILOG_FILES_BLACKBOX) "\
-	$::env(CARAVEL_ROOT)/verilog/rtl/defines.v \
-	$script_dir/../../verilog/rtl/user_proj_example.v"
+	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/verilog/sky130_sram_2kbyte_1rw1r_32x512_8.v \
+	$script_dir/../../verilog/rtl/rvj1_caravel_soc.v"
 
 set ::env(EXTRA_LEFS) "\
-	$script_dir/../../lef/user_proj_example.lef"
+	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef \
+	$script_dir/../../lef/rvj1_caravel_soc.lef"
 
 set ::env(EXTRA_GDS_FILES) "\
-	$script_dir/../../gds/user_proj_example.gds"
+	$::env(PDK_ROOT)/$::env(PDK)/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds \
+	$script_dir/../../gds/rvj1_caravel_soc.gds"
 
-# set ::env(GLB_RT_MAXLAYER) 5
+#set ::env(GLB_RT_MAXLAYER) 5
 set ::env(RT_MAX_LAYER) {met4}
 
 # disable pdn check nodes becuase it hangs with multiple power domains.
@@ -84,5 +117,3 @@ set ::env(DIODE_INSERTION_STRATEGY) 0
 set ::env(FILL_INSERTION) 0
 set ::env(TAP_DECAP_INSERTION) 0
 set ::env(CLOCK_TREE_SYNTH) 0
-
-
